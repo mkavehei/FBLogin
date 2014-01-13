@@ -11,7 +11,7 @@ class authController extends siteController {
   private $img_holder   = 'v3.jpg';
   private $msg_error = "Required OR Invalid Field(s)";  
   private $msg_error_login_failed = "Invalid Login";
-  private $luckyNumber = 1345;
+  private $luckyNumber = 20144;
   
   public  $doGrids = true; 
 
@@ -482,36 +482,7 @@ class authController extends siteController {
 		       $this->view['auth']=$authArr;			   
 		  }	 
 
-		  $biz = register::getCore('main')->getBizByEmail($authArr['uemail']);
-	      if (isset($biz) && isset($biz['biz_id']) ) { 
-			   $hash = sha1( $biz['biz_id'].logSession::getCore('main')->getSalt() );	
-			   $code=$this->luckyNumber + (int)$biz['biz_id'];			   
-			   $link = SITE_URL.  "auth/resetpwd?hash&#61;" . urlencode($hash)."&amp;code&#61;".urlencode($code).'m';					   
-			   $biz['secure_id'] = $hash;
-               // create a reset link and email it to member's email address
-			   $ret = email::getCore()->resetPwd(array('email'=>$authArr['uemail'], 'link' => $link) );
-		       $sentOR =  ($ret? " has " : " has NOT ");
-		       $this->logger(__METHOD__ . " Reset Link to user " . $sentOR . "been emailed!" ); 
-
-			   // add it to member log table
-     		   $dbName = getDB($biz['category_id']);
-			   $logArr=array();
-			   $logArr['action']="Member " . $biz['title'] . " ask to reset pwd.";
-			   $logArr['biz_id']= $biz['biz_id'];				   	
-			   $logArr['ip_address']=$_SERVER['REMOTE_ADDR'];
-			   $logArr['created_at']=time();
-			   $logSaved =  member::getCore($dbName)->insert("log", $logArr );
-			   $this->logger(__METHOD__.  ":line(".__LINE__ .") ". " Member logged saved or not ". $logSaved );
-			   unset($logArr);  
-			   /////////////////////////////////  
-		       $this->view['tempId']= $tempId;
-	           $this->view['tempHash']=$tempHash;
-			   $authArr['msg'] = 'Reset instruction sent to your email address. ';
-		       $this->view['auth']=$authArr;				   
-		  } 
-
-		  // if not user nor not biz, the that email doe snot exist!!
-		  if ( !$biz   &&   !$user   &&   !$biz['biz_id']   &&   !$user['user_id']) { 
+		  if (  !$user   &&   !$user['user_id']) { 
 	         $this->view['tempId']= $tempId;
 	         $this->view['tempHash']=$tempHash;
 		     $this->setErrMsg('msg', $this->invalid_hint);
